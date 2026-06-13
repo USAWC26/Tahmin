@@ -77,18 +77,27 @@ await page.click('#welcomeStart');
 
 await new Promise(r => setTimeout(r, 2000));
 
+await page.screenshot({ path: 'ekran.png' });
+
 console.log("5. Gerçek Sonuçlar ekranı açılıyor...");
+
+await page.waitForSelector('#goOfficial', {
+  visible: true,
+  timeout: 15000
+});
+
+console.log("goOfficial bulundu");
 
 page.once('dialog', async dialog => {
   console.log("PIN penceresi açıldı");
   await dialog.accept(process.env.ADMIN_SIFRE);
 });
 
-await page.click('#goOfficial');
+await page.$eval('#goOfficial', el => el.click());
 
-await new Promise(r => setTimeout(r, 2000));
+await new Promise(r => setTimeout(r, 3000));
 
-console.log("Gerçek Sonuçlar ekranına girildi.");
+console.log("Gerçek Sonuçlar ekranına girildi");
 
     console.log("5. Sıralamalar arayüze işleniyor...");
     for (const [grup, takimlar] of Object.entries(canliSiralama)) {
