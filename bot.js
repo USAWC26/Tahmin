@@ -120,12 +120,56 @@ console.log("5 saniye beklendi");
 console.log("Gerçek Sonuçlar hesabına geçildi");
     
     console.log("5. Sıralamalar arayüze işleniyor...");
-    for (const [grup, takimlar] of Object.entries(canliSiralama)) {
-        for (const takimKodu of takimlar) {
-            const kutuSecici = `[data-team="${takimKodu}"]`; 
-            try {
-               await page.waitForSelector(kutuSecici, { timeout: 2000 });
-               await page.click(kutuSecici); 
+
+for (const [grup, takimlar] of Object.entries(canliSiralama)) {
+
+    for (const takimKodu of takimlar) {
+
+        const takimIndex = await page.evaluate((grup, takimKodu) => {
+
+            const GROUPS = {
+                A:["mx","za","kr","cz"],
+                B:["ca","ba","qa","ch"],
+                C:["br","ma","ht","gb-sct"],
+                D:["us","py","au","tr"],
+                E:["de","cw","ci","ec"],
+                F:["nl","jp","se","tn"],
+                G:["be","eg","ir","nz"],
+                H:["es","cv","sa","uy"],
+                I:["fr","sn","iq","no"],
+                J:["ar","dz","at","jo"],
+                K:["pt","cd","uz","co"],
+                L:["gb-eng","hr","gh","pa"]
+            };
+
+            return GROUPS[grup].indexOf(takimKodu);
+
+        }, grup, takimKodu);
+
+        if (takimIndex === -1) {
+            console.log(`Takım bulunamadı: ${takimKodu}`);
+            continue;
+        }
+
+        const selector = `[data-rank="${grup}-${takimIndex}"]`;
+
+        try {
+
+            await page.waitForSelector(selector, { timeout: 5000 });
+
+            await page.click(selector);
+
+            console.log(`${grup} -> ${takimKodu} seçildi`);
+
+            await new Promise(r => setTimeout(r, 300));
+
+        } catch(err) {
+
+            console.log(`Tıklanamadı: ${selector}`);
+
+        }
+    }
+}
                await new Promise(r => setTimeout(r, 500));
             } catch(e) {
                console.log(`Uyarı: Arayüzde ${takimKodu} kodlu takım bulunamadı.`);
