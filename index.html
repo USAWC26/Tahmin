@@ -1127,17 +1127,23 @@ function renderSnapshot(snap){
 function loadLiveResults(){
   const msg=document.getElementById("seeMsg");
   if(msg){ msg.style.color="var(--muted)"; msg.textContent="Yükleniyor..."; }
-  return fetch("sonuc.txt?t="+Date.now(),{cache:"no-store"})
-    .then(function(r){ if(!r.ok) throw 0; return r.text(); })
-    .then(function(txt){
-      const raw=(txt||"").trim();
-      if(!raw || raw[0]!=="S"){ if(msg){ msg.style.color="var(--muted)"; msg.textContent="Henüz sıralama yayınlanmadı. Maçlar oynandıkça burada görünecek."; } document.getElementById("seeTable").innerHTML=""; return false; }
-      let snap; try{ snap=parseStandingsCode(raw); }catch(e){ if(msg){ msg.style.color="var(--red)"; msg.textContent="Sıralama okunamadı."; } return false; }
-      renderSnapshot(snap);
-      if(msg){ msg.style.color="var(--p1)"; msg.textContent="🟢 Canlı sıralama · "+Object.keys(snap.users||{}).length+" kişi · "+new Date().toLocaleTimeString("tr-TR")+" (🔄 ile yenile)"; }
-      return true;
-    })
-    .catch(function(){ if(msg){ msg.style.color="var(--muted)"; msg.textContent="Çevrimdışı görünüyorsun — aşağıdan kodu elle yapıştırabilirsin."; } return false; });
+  const get=function(u){ return fetch(u+"?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():"";}).catch(function(){return "";}); };
+  return Promise.all([get("sonuc.txt"), get("tahminler.txt")]).then(function(arr){
+    const sonuc=(arr[0]||"").trim(), tah=(arr[1]||"").trim();
+    const users={};
+    // tahminler.txt: her satır bir oyuncu kodu (44 kişi, bir kez ayarlanır)
+    tah.split(/\r?\n/).forEach(function(line){ const c=line.trim(); if(c && (c[0]==="Q"||c[0]==="P")){ try{ const r=parsePredCode(c); if(r&&r.n&&r.d) users[r.n]=r.d; }catch(e){} } });
+    // sonuc.txt: tam S kodu (official+kullanıcılar) VEYA sadece gerçek-sonuç kodu (Q/P)
+    let official=null;
+    if(sonuc){
+      if(sonuc[0]==="S"){ try{ const snap=parseStandingsCode(sonuc); official=snap.official; Object.keys(snap.users||{}).forEach(function(n){ users[n]=snap.users[n]; }); }catch(e){} }
+      else if(sonuc[0]==="Q"||sonuc[0]==="P"){ try{ official=parsePredCode(sonuc).d; }catch(e){} }
+    }
+    if(!official){ if(msg){ msg.style.color="var(--muted)"; msg.textContent="Henüz sonuç yayınlanmadı. Maçlar oynandıkça burada görünecek."; } document.getElementById("seeTable").innerHTML=""; return false; }
+    renderSnapshot({official:official, users:users});
+    if(msg){ msg.style.color="var(--p1)"; msg.textContent="🟢 Canlı sıralama · "+Object.keys(users).length+" kişi · "+new Date().toLocaleTimeString("tr-TR")+" (🔄 ile yenile)"; }
+    return true;
+  }).catch(function(){ if(msg){ msg.style.color="var(--muted)"; msg.textContent="Çevrimdışı görünüyorsun — aşağıdan kodu elle yapıştırabilirsin."; } return false; });
 }
 var _rl=document.getElementById("refreshLiveBtn"); if(_rl) _rl.addEventListener("click",loadLiveResults);
 var _wl=document.getElementById("welcomeLive"); if(_wl) _wl.addEventListener("click",function(){ enterApp("seestand"); });
