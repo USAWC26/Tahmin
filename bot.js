@@ -103,19 +103,20 @@ console.log("Gerçek Sonuçlar seçiliyor...");
 
 page.once('dialog', async dialog => {
   console.log("PIN istendi");
+  console.log("PIN gönderiliyor...");
+  
   await dialog.accept(process.env.ADMIN_SIFRE);
+  
+  console.log("PIN gönderildi");
 });
 
 await page.select('#userSel', '__official__');
 
-await page.evaluate(() => {
-  document.getElementById('userSel').dispatchEvent(
-    new Event('change', { bubbles: true })
-  );
-});
+console.log("Official seçildi");
 
-await new Promise(r => setTimeout(r, 3000));
+await new Promise(r => setTimeout(r, 5000));
 
+console.log("5 saniye beklendi");
 console.log("Gerçek Sonuçlar hesabına geçildi");
     
     console.log("5. Sıralamalar arayüze işleniyor...");
