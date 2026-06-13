@@ -73,8 +73,13 @@ const axios = require('axios');
     console.log("İşlem başarıyla tamamlandı! Yeni sıralama github'a kaydedilecek.");
 
     await browser.close();
-  } catch (error) {
-    console.error("Kritik Hata:", error.message);
+ } catch (error) {
+    if (error.response) {
+      console.error("API Bizi Reddetti! Detaylı Hata Kodu:", error.response.status);
+      console.error("Reddedilme Sebebi:", JSON.stringify(error.response.data, null, 2));
+    } else {
+      console.error("Kritik Hata:", error.message);
+    }
     process.exit(1);
   }
 })();
