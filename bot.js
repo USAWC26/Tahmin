@@ -63,16 +63,32 @@ try {
     console.log("3. Yerel sistem ayağa kaldırılıyor...");
     await page.goto(`file://${__dirname}/index.html`);
 
-    const mevcutKod = fs.readFileSync('sonuc.txt', 'utf8');
-    await page.type('#welcomeCode', mevcutKod);
-    await page.click('#welcomeCodeBtn');
-    await new Promise(r => setTimeout(r, 1000));
+    console.log("4. Siteye giriş yapılıyor...");
 
-    console.log("4. OFFICIAL hesap ile giriş yapılıyor...");
-    await page.type('#welcomeName', 'OFFICIAL');
-    await page.type('#welcomePno', process.env.ADMIN_SIFRE);
-    await page.keyboard.press('Enter');
-    await new Promise(r => setTimeout(r, 2000));
+await page.waitForSelector('#welcomeName', {
+  visible: true,
+  timeout: 10000
+});
+
+await page.type('#welcomeName', 'AAA AAA');
+await page.type('#welcomePno', '123456');
+
+await page.click('#welcomeStart');
+
+await new Promise(r => setTimeout(r, 2000));
+
+console.log("5. Gerçek Sonuçlar ekranı açılıyor...");
+
+page.once('dialog', async dialog => {
+  console.log("PIN penceresi açıldı");
+  await dialog.accept(process.env.ADMIN_SIFRE);
+});
+
+await page.click('#goOfficial');
+
+await new Promise(r => setTimeout(r, 2000));
+
+console.log("Gerçek Sonuçlar ekranına girildi.");
 
     console.log("5. Sıralamalar arayüze işleniyor...");
     for (const [grup, takimlar] of Object.entries(canliSiralama)) {
