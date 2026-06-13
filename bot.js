@@ -1,34 +1,53 @@
-JavaScript
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const axios = require('axios');
 
 (async () => {
   try {
-    console.log("1. Canlı puan durumu football-data.org üzerinden çekiliyor...");
+    console.log("1. Canlı puan durumu Zafronix API'den çekiliyor...");
     
-    // API'den Dünya Kupası (WC) puan durumunu çek (Headers kısmı bu API'ye özeldir)
-    const response = await axios.get('https://api.football-data.org/v4/competitions/WC/standings', {
-      headers: { 'X-Auth-Token': process.env.API_KEY }
-    });
-    
-    // Sadece grupların genel (TOTAL) puan durumunu filtrele
-    const gruplar = response.data.standings.filter(s => s.type === 'TOTAL');
-    
-    // Veriyi bizim botun anlayacağı formata çeviriyoruz: { "A": ["MEX", "CAN", "USA"], "B": [...] }
-    const canliSiralama = {};
-    
-    gruplar.forEach(grupData => {
-        // API'den gelen "GROUP_A" isminden sadece "A" harfini alıyoruz
-        const grupHarfi = grupData.group.replace('GROUP_', ''); 
-        
-        // Tablodaki takımların 3 harfli kısa kodlarını (tla) sırasıyla listeye alıyoruz
-        const takimSirasi = grupData.table.map(row => row.team.tla);
-        
-        canliSiralama[grupHarfi] = takimSirasi;
+    // Zafronix API Dünya Kupası Standings Uç Noktası
+    const response = await axios.get('https://api.zafronix.com/fifa/worldcup/v1/standings', {
+      params: { year: 2026 },
+      headers: {
+        'X-API-Key': process.env.API_KEY,
+        'Accept': 'application/json'
+      }
     });
 
-    console.log("Güncel Sıralama Başarıyla Alındı!");
+    const canliSiralama = {};
+    
+    // Zafronix verisinin JSON ağacını yakalıyoruz
+    let gruplar = response.data.standings || response.data.data || response.data;
+    if (!Array.isArray(gruplar) && gruplar.groups) {
+        gruplar = gruplar.groups;
+    }
+
+    try {
+        gruplar.forEach(grupData => {
+            // Grup ismini sadeleştir ("Group A" -> "A")
+            const grupIsmi = grupData.group || grupData.name || '';
+            const grupHarfi = grupIsmi.replace('Group ', '').trim();
+            
+            // Takımların sıralandığı dizi
+            const takimlar = grupData.table || grupData.standings || grupData.teams;
+            
+            const takimSirasi = takimlar.map(row => {
+                const takim = row.team || row;
+                // Arayüzündeki 3 harfli kodlarla (örn: MEX, BRA) eşleşmesi için:
+                return (takim.code || takim.tla || takim.name.substring(0, 3)).toUpperCase(); 
+            });
+            
+            if (grupHarfi && takimSirasi.length > 0) {
+                canliSiralama[grupHarfi] = takimSirasi;
+            }
+        });
+        console.log("Sıralama Başarıyla Çevrildi. İşlenecek Veri:", canliSiralama);
+    } catch(e) {
+        console.error("API Veri Formatı Beklenenden Farklı! Gelen Ham Veri:");
+        console.error(JSON.stringify(response.data, null, 2));
+        throw new Error("Veri eşleştirme hatası (JSON formatı farklı).");
+    }
 
     console.log("2. Sanal tarayıcı başlatılıyor...");
     const browser = await puppeteer.launch({ headless: "new" });
@@ -51,12 +70,10 @@ const axios = require('axios');
     console.log("5. Sıralamalar arayüze işleniyor...");
     for (const [grup, takimlar] of Object.entries(canliSiralama)) {
         for (const takimKodu of takimlar) {
-            // HTML tarafında takım seçici div yapısının 'data-team' kullandığını varsayıyoruz
             const kutuSecici = `[data-team="${takimKodu}"]`; 
-            
             try {
                await page.waitForSelector(kutuSecici, { timeout: 2000 });
-               await page.click(kutuSecici); // Sırasıyla 1., 2., 3. olarak tıklar
+               await page.click(kutuSecici); 
                await new Promise(r => setTimeout(r, 500));
             } catch(e) {
                console.log(`Uyarı: Arayüzde ${takimKodu} kodlu takım bulunamadı.`);
@@ -73,9 +90,9 @@ const axios = require('axios');
     console.log("İşlem başarıyla tamamlandı! Yeni sıralama github'a kaydedilecek.");
 
     await browser.close();
- } catch (error) {
+  } catch (error) {
     if (error.response) {
-      console.error("API Bizi Reddetti! Detaylı Hata Kodu:", error.response.status);
+      console.error("API Bizi Reddetti! Durum Kodu:", error.response.status);
       console.error("Reddedilme Sebebi:", JSON.stringify(error.response.data, null, 2));
     } else {
       console.error("Kritik Hata:", error.message);
