@@ -184,17 +184,24 @@ await new Promise(r => setTimeout(r, 2000));
 
 let yayinKodu = "";
 
-page.once('dialog', async dialog => {
+await page.evaluate(() => {
 
-    yayinKodu = dialog.message();
+    window.yayinKodu = "";
 
-    await dialog.accept();
+    window.prompt = (msg, def) => {
+
+        window.yayinKodu = def || "";
+
+        return def;
+    };
 
 });
 
 await page.click('#publishBtn');
 
-await new Promise(r => setTimeout(r, 3000));
+await new Promise(r => setTimeout(r, 2000));
+
+yayinKodu = await page.evaluate(() => window.yayinKodu);
 
 fs.writeFileSync('sonuc.txt', yayinKodu);
 
