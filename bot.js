@@ -99,21 +99,25 @@ const options = await page.$$eval(
 console.log("OYUNCULAR:");
 console.log(JSON.stringify(options, null, 2));
 
-return;
-
-console.log("goOfficial bulundu");
+console.log("Gerçek Sonuçlar seçiliyor...");
 
 page.once('dialog', async dialog => {
-  console.log("PIN penceresi açıldı");
+  console.log("PIN istendi");
   await dialog.accept(process.env.ADMIN_SIFRE);
 });
 
-await page.$eval('#goOfficial', el => el.click());
+await page.select('#userSel', '__official__');
+
+await page.evaluate(() => {
+  document.getElementById('userSel').dispatchEvent(
+    new Event('change', { bubbles: true })
+  );
+});
 
 await new Promise(r => setTimeout(r, 3000));
 
-console.log("Gerçek Sonuçlar ekranına girildi");
-
+console.log("Gerçek Sonuçlar hesabına geçildi");
+    
     console.log("5. Sıralamalar arayüze işleniyor...");
     for (const [grup, takimlar] of Object.entries(canliSiralama)) {
         for (const takimKodu of takimlar) {
