@@ -171,13 +171,32 @@ for (const [grup, takimlar] of Object.entries(canliSiralama)) {
     }
 }
 
-    console.log("6. Yeni kod üretiliyor...");
-    await page.click('#genS'); 
-    await new Promise(r => setTimeout(r, 1000));
+    console.log("6. Liderlik sekmesine geçiliyor...");
 
-    const yeniKod = await page.$eval('#outS', el => el.value);
-    fs.writeFileSync('sonuc.txt', yeniKod);
-    console.log("İşlem başarıyla tamamlandı! Yeni sıralama github'a kaydedilecek.");
+await page.click('button[data-tab="board"]');
+
+await new Promise(r => setTimeout(r, 2000));
+
+let yayinKodu = "";
+
+page.once('dialog', async dialog => {
+
+    yayinKodu = dialog.message();
+
+    await dialog.accept();
+
+});
+
+await page.click('#publishBtn');
+
+await new Promise(r => setTimeout(r, 3000));
+
+fs.writeFileSync('sonuc.txt', yayinKodu);
+
+console.log("Kod kaydedildi:");
+console.log(yayinKodu);
+
+console.log("İşlem başarıyla tamamlandı!");
 
     await browser.close();
   } catch (error) {
