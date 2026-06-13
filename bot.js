@@ -16,32 +16,33 @@ const axios = require('axios');
     });
 
     const canliSiralama = {};
-    
-    // Zafronix verisinin JSON ağacını yakalıyoruz
-    let gruplar = response.data.standings || response.data.data || response.data;
-    if (!Array.isArray(gruplar) && gruplar.groups) {
-        gruplar = gruplar.groups;
-    }
 
-    try {
-        gruplar.forEach(grupData => {
-            // Grup ismini sadeleştir ("Group A" -> "A")
-            const grupIsmi = grupData.group || grupData.name || '';
-            const grupHarfi = grupIsmi.replace('Group ', '').trim();
-            
-            // Takımların sıralandığı dizi
-            const takimlar = grupData.table || grupData.standings || grupData.teams;
-            
-            const takimSirasi = takimlar.map(row => {
-                const takim = row.team || row;
-                // Arayüzündeki 3 harfli kodlarla (örn: MEX, BRA) eşleşmesi için:
-                return (takim.code || takim.tla || takim.name.substring(0, 3)).toUpperCase(); 
-            });
-            
-            if (grupHarfi && takimSirasi.length > 0) {
-                canliSiralama[grupHarfi] = takimSirasi;
-            }
-        });
+const TEAM_MAP = {
+  "Mexico":"mx","South Africa":"za","Korea Republic":"kr","Czechia":"cz",
+  "Canada":"ca","Bosnia and Herzegovina":"ba","Qatar":"qa","Switzerland":"ch",
+  "Brazil":"br","Morocco":"ma","Haiti":"ht","Scotland":"gb-sct",
+  "USA":"us","Paraguay":"py","Australia":"au","Türkiye":"tr",
+  "Germany":"de","Curaçao":"cw","Côte d'Ivoire":"ci","Ecuador":"ec",
+  "Netherlands":"nl","Japan":"jp","Sweden":"se","Tunisia":"tn",
+  "Belgium":"be","Egypt":"eg","IR Iran":"ir","New Zealand":"nz",
+  "Spain":"es","Cabo Verde":"cv","Saudi Arabia":"sa","Uruguay":"uy",
+  "France":"fr","Senegal":"sn","Iraq":"iq","Norway":"no",
+  "Argentina":"ar","Algeria":"dz","Austria":"at","Jordan":"jo",
+  "Portugal":"pt","Congo DR":"cd","Uzbekistan":"uz","Colombia":"co",
+  "England":"gb-eng","Croatia":"hr","Ghana":"gh","Panama":"pa"
+};
+
+try {
+
+    Object.entries(response.data.groups).forEach(([grupHarfi, takimlar]) => {
+
+        canliSiralama[grupHarfi] = takimlar
+            .map(t => TEAM_MAP[t.team])
+            .filter(Boolean);
+
+    });
+
+    console.log("Sıralama Başarıyla Çevrildi:", canliSiralama);
         console.log("Sıralama Başarıyla Çevrildi. İşlenecek Veri:", canliSiralama);
     } catch(e) {
         console.error("API Veri Formatı Beklenenden Farklı! Gelen Ham Veri:");
