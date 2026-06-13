@@ -1,0 +1,1 @@
+Buraya gercek-sonuc (siralama) kodunu yapistir. Organizator uygulamada 'Guncel Siralamayi Yayinla' ile kopyalar, bu dosyanin icerigini onunla degistirir. (Su an bos.)
