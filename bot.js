@@ -51,7 +51,13 @@ try {
     }
 
     console.log("2. Sanal tarayıcı başlatılıyor...");
-    const browser = await puppeteer.launch({ headless: "new" });
+    const browser = await puppeteer.launch({
+  headless: true,
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox'
+  ]
+});
     const page = await browser.newPage();
 
     console.log("3. Yerel sistem ayağa kaldırılıyor...");
