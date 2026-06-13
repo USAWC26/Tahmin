@@ -79,12 +79,27 @@ await new Promise(r => setTimeout(r, 2000));
 
 await page.screenshot({ path: 'ekran.png' });
 
-console.log("5. Gerçek Sonuçlar ekranı açılıyor...");
+console.log("5. Oyuncu listesi aranıyor...");
 
-await page.waitForSelector('#goOfficial', {
+await page.waitForSelector('#userSel', {
   visible: true,
   timeout: 15000
 });
+
+console.log("Oyuncu listesi bulundu");
+
+const options = await page.$$eval(
+  '#userSel option',
+  opts => opts.map(o => ({
+    text: o.textContent,
+    value: o.value
+  }))
+);
+
+console.log("OYUNCULAR:");
+console.log(JSON.stringify(options, null, 2));
+
+return;
 
 console.log("goOfficial bulundu");
 
