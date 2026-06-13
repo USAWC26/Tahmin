@@ -170,12 +170,6 @@ for (const [grup, takimlar] of Object.entries(canliSiralama)) {
         }
     }
 }
-               await new Promise(r => setTimeout(r, 500));
-            } catch(e) {
-               console.log(`Uyarı: Arayüzde ${takimKodu} kodlu takım bulunamadı.`);
-            }
-        }
-    }
 
     console.log("6. Yeni kod üretiliyor...");
     await page.click('#genS'); 
