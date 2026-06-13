@@ -171,6 +171,11 @@ for (const [grup, takimlar] of Object.entries(canliSiralama)) {
     }
 }
 
+await page.screenshot({
+    path: 'son-secim.png',
+    fullPage: true
+});
+    
     console.log("6. Liderlik sekmesine geçiliyor...");
 
 await page.click('button[data-tab="board"]');
