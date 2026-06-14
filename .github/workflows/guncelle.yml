@@ -2,7 +2,7 @@ name: Otomatik Siralama Guncellemesi
 
 on:
   schedule:
-    # Her gece Türkiye saati ile 11:00'da çalışır
+    # Her gece Türkiye saati ile 04:13'de çalışır
     - cron: '13 1 * * *'
   workflow_dispatch: # Test edebilmen için manuel çalıştırma butonu ekler
 
