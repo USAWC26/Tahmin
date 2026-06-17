@@ -176,6 +176,44 @@ await page.screenshot({
     fullPage: true
 });
     
+
+    // ===== BONUSLAR (liderlikten önce) — cevabı bildikçe "..." yerine yaz; "..." veya boş kalanlar atlanır =====
+    console.log("5.5. Bonuslar işaretleniyor...");
+
+await page.click('button[data-tab="bonus"]');
+
+await page.waitForSelector('[data-bonus]', { timeout: 10000 });
+
+const bonuslar = [
+    { id: "scorer",     tip: "yazi",     cevap: "..." },      // ⚽ Gol Kralı (oyuncu adı)        örn: "Kylian Mbappé"
+    { id: "assist",     tip: "yazi",     cevap: "..." },      // 🅰️ Asist Kralı (oyuncu adı)      örn: "Lamine Yamal"
+    { id: "finalgoals", tip: "yazi",     cevap: "..." },      // 🥅 Final maçı toplam gol (sayı)  örn: "3"
+    { id: "glove",      tip: "dropdown", cevap: "..." },      // 🧤 Altın Eldiven (ülke)          örn: "Fransa"
+    { id: "topteam",    tip: "dropdown", cevap: "..." },      // ⚽ En Golcü Takım (ülke)         örn: "Brezilya"
+    { id: "hattrick",   tip: "dropdown", cevap: "Arjantin" }, // 🎩 İlk Hat-trick (ülke)          örn: "Arjantin"
+];
+
+for (const b of bonuslar) {
+
+    if (!b.cevap || b.cevap === "...") continue;   // doldurulmamış -> atla
+
+    try {
+        if (b.tip === "dropdown") {
+            // ülke seçimi (dropdown) — otomatik "change" tetikler
+            await page.select(`select[data-bonus="${b.id}"]`, b.cevap);
+        } else {
+            // yazı/sayı girişi — önce temizle, sonra yaz ("input" tetikler)
+            await page.click(`input[data-bonus="${b.id}"]`, { clickCount: 3 });
+            await page.type(`input[data-bonus="${b.id}"]`, String(b.cevap));
+        }
+        console.log(`Bonus işaretlendi: ${b.id} = ${b.cevap}`);
+    } catch (e) {
+        console.log(`Bonus atlandı: ${b.id} (${e.message})`);
+    }
+}
+
+await new Promise(r => setTimeout(r, 500));
+
     console.log("6. Liderlik sekmesine geçiliyor...");
 
 await page.click('button[data-tab="board"]');
