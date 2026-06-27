@@ -18,7 +18,7 @@ jobs:
       - env:
           ADMIN_SIFRE: ${{ secrets.ADMIN_SIFRE }}
           API_KEY: ${{ secrets.API_KEY }}
-        run: node test-api.js
+        run: node bot.js
       - name: Klasördeki dosyaları göster
         run: ls -la
 
