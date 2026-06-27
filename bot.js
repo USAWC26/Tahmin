@@ -14,6 +14,16 @@ const axios = require('axios');
         'Accept': 'application/json'
       }
     });
+    const responseBracket = await axios.get(
+  'https://api.zafronix.com/fifa/worldcup/v1/bracket',
+  {
+    params: { year: 2026 },
+    headers: {
+      'X-API-Key': process.env.API_KEY,
+      'Accept': 'application/json'
+    }
+  }
+);
 fs.writeFileSync(
     "api.json",
     JSON.stringify(response.data, null, 2)
@@ -64,7 +74,9 @@ try {
     const page = await browser.newPage();
 
     console.log("3. Yerel sistem ayağa kaldırılıyor...");
-    await page.goto(`file://${__dirname}/index.html`);
+    await page.goto(`file://${__dirname}/index.html`, {
+  waitUntil: "networkidle0"
+});
 
     console.log("4. Siteye giriş yapılıyor...");
 
@@ -237,6 +249,104 @@ for (const [grup, takimlar] of Object.entries(response.data.groups)) {
 }
 
 await new Promise(r => setTimeout(r, 500));
+    console.log("6. Eleme sekmesine geçiliyor...");
+
+await page.click('button[data-tab="knockout"]');
+await new Promise(r => setTimeout(r, 2000));
+
+async function isaretleEleme(maclar){
+
+    if(!maclar) return;
+
+    for(const mac of maclar){
+
+        if(!mac.winner) continue;
+
+        try{
+
+            const takimlar = await page.$$eval(
+                ".ko-match",
+                (cards, matchNo)=>{
+
+                    for(const c of cards){
+
+                        const h = c.querySelector(".mh span");
+
+                        if(!h) continue;
+
+                        if(!h.textContent.includes("Maç "+matchNo)) continue;
+
+                        return [...c.querySelectorAll(".ko-team")]
+                            .map(x=>x.innerText.trim());
+
+                    }
+
+                    return [];
+
+                },
+                mac.matchNo
+            );
+
+            if(takimlar.length!==2) continue;
+
+            let index=-1;
+
+           const winner = mac.winner.trim().toLowerCase();
+
+            if (takimlar[0].trim().toLowerCase().includes(winner)) index = 0;
+            if (takimlar[1].trim().toLowerCase().includes(winner)) index = 1;
+
+            if(index===-1){
+
+                console.log("Kazanan bulunamadı:",mac.matchNo,mac.winner);
+
+                continue;
+
+            }
+
+            await page.evaluate((matchNo,index)=>{
+
+                const cards=[...document.querySelectorAll(".ko-match")];
+
+                for(const c of cards){
+
+                    const h=c.querySelector(".mh span");
+
+                    if(!h) continue;
+
+                    if(!h.textContent.includes("Maç "+matchNo)) continue;
+
+                    c.querySelectorAll(".ko-team")[index].click();
+
+                    break;
+
+                }
+
+            },mac.matchNo,index);
+
+            console.log("✓ Maç",mac.matchNo,"=",mac.winner);
+
+            await new Promise(r=>setTimeout(r,300));
+
+        }catch(e){
+
+            console.log("Eleme Hatası:",mac.matchNo,e.message);
+
+        }
+
+    }
+
+}
+
+await isaretleEleme(responseBracket.data.stages.round_of_32);
+
+await isaretleEleme(responseBracket.data.stages.round_of_16);
+
+await isaretleEleme(responseBracket.data.stages.quarter_finals);
+
+await isaretleEleme(responseBracket.data.stages.semi_finals);
+
+await isaretleEleme(responseBracket.data.stages.final || responseBracket.data.stages.finals);
 
     console.log("6. Liderlik sekmesine geçiliyor...");
 
