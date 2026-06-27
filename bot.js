@@ -14,7 +14,10 @@ const axios = require('axios');
         'Accept': 'application/json'
       }
     });
-
+fs.writeFileSync(
+    "api.json",
+    JSON.stringify(response.data, null, 2)
+);
     const canliSiralama = {};
 
 const TEAM_MAP = {
