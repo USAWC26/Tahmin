@@ -19,6 +19,16 @@ jobs:
           ADMIN_SIFRE: ${{ secrets.ADMIN_SIFRE }}
           API_KEY: ${{ secrets.API_KEY }}
         run: node bot.js
+      - name: Klasördeki dosyaları göster
+        run: ls -la
+
+      - name: API JSON'u göster
+        run: |
+          if [ -f api.json ]; then
+            cat api.json
+          else
+            echo "api.json bulunamadı"
+          fi
       - run: |
           git config --global user.name 'Siralama Botu'
           git config --global user.email 'bot@otomasyon.com'
