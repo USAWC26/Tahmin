@@ -217,6 +217,27 @@ for (const b of bonuslar) {
 
 await new Promise(r => setTimeout(r, 500));
 
+    console.log("5.6. En iyi 3.'ler seçiliyor...");
+
+await page.click('button[data-tab="thirds"]');
+
+await page.waitForSelector('[data-third]', {
+    timeout: 10000
+});
+
+for (const [grup, takimlar] of Object.entries(response.data.groups)) {
+
+    const ucuncu = takimlar.find(t => t.position === 3 && t.advanced === true);
+
+    if (!ucuncu) continue;
+
+    await page.click(`[data-third="${grup}"]`);
+
+    console.log(`${grup} grubunun 3.sü seçildi`);
+}
+
+await new Promise(r => setTimeout(r, 500));
+
     console.log("6. Liderlik sekmesine geçiliyor...");
 
 await page.click('button[data-tab="board"]');
