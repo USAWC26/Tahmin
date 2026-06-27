@@ -28,7 +28,8 @@ const endpoints = [
       console.log(ep.toUpperCase());
       console.log("========================");
       console.log(JSON.stringify(r.data, null, 2));
-
+      const stages = [...new Set(r.data.map(x => x.stage))];
+console.log("STAGES:", stages);
     } catch (e) {
       console.log(`${ep} -> ${e.response?.status || e.message}`);
     }
