@@ -508,7 +508,7 @@ const BRONZE=[103,"L101","L102"], FINAL=[104,"W101","W102"];
 const KO_ALL=[...R32,...R16,...QF,...SF,BRONZE,FINAL];
 const KO_INDEX={}; KO_ALL.forEach(m=>KO_INDEX[m[0]]=m);
 const KO_PTS={}; R32.forEach(m=>KO_PTS[m[0]]=2); R16.forEach(m=>KO_PTS[m[0]]=3);
-QF.forEach(m=>KO_PTS[m[0]]=5); SF.forEach(m=>KO_PTS[m[0]]=8); KO_PTS[103]=4; KO_PTS[104]=12;
+QF.forEach(m=>KO_PTS[m[0]]=5); SF.forEach(m=>KO_PTS[m[0]]=8); KO_PTS[103]=10; KO_PTS[104]=12;
 // Bonus sorular
 const BONUS=[
   {id:"scorer", q:"⚽ Kim en çok gol atar? (Gol Kralı)", short:"Gol Kralı",  type:"player", pts:5},
